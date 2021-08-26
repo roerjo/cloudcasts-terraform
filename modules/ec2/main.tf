@@ -1,3 +1,8 @@
+resource "random_shuffle" "subnets" {
+  input        = var.subnets
+  result_count = 1
+}
+
 resource "aws_instance" "cloudcasts_web" {
   ami           = var.instance_ami
   instance_type = var.instance_size
@@ -17,10 +22,17 @@ resource "aws_instance" "cloudcasts_web" {
     }
   }
 
-  tags = {
-    Name        = "cloudcasts-${var.environment}-web"
-    Project     = "cloudcasts.io"
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
+  subnet_id                   = random_shuffle.subnets.result[0]
+  vpc_security_group_ids      = var.security_groups
+  associate_public_ip_address = var.create_public_ip ? true : false
+
+  tags = merge(
+    {
+      Name        = "cloudcasts-${var.environment}"
+      Project     = "cloudcasts.io"
+      Environment = var.environment
+      ManagedBy   = "terraform"
+    },
+    var.tags
+  )
 }

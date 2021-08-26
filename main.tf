@@ -52,15 +52,29 @@ module "vpc" {
 module "ec2_app" {
   source = "./modules/ec2"
 
-  environment  = var.environment
-  instance_ami = data.aws_ami.app.id
-  infra_role   = "web"
+  environment      = var.environment
+  instance_ami     = data.aws_ami.app.id
+  infra_role       = "web"
+  create_public_ip = true
+  # For some reason a t3.micro can't be added to "US-EAST-1E"
+  subnets         = ["subnet-0578825bc915e6628"] #keys(module.vpc.vpc_public_subnets)
+  security_groups = [module.vpc.security_group_public]
+  tags = {
+    Name = "cloudcasts-${var.environment}-web"
+  }
 }
 
 module "ec2_worker" {
   source = "./modules/ec2"
 
-  environment  = var.environment
-  instance_ami = data.aws_ami.app.id
-  infra_role   = "worker"
+  environment      = var.environment
+  instance_ami     = data.aws_ami.app.id
+  infra_role       = "worker"
+  create_public_ip = false
+  subnets          = keys(module.vpc.vpc_private_subnets)
+  security_groups  = [module.vpc.security_group_private]
+
+  tags = {
+    Name = "cloudcasts-${var.environment}-worker"
+  }
 }
