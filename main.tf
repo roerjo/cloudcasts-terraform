@@ -42,29 +42,25 @@ data "aws_ami" "app" {
   owners = ["self"]
 }
 
-resource "aws_instance" "cloudcasts_web" {
-  ami           = data.aws_ami.app.id
-  instance_type = "t3.micro"
+module "vpc" {
+  source = "./modules/vpc"
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  environment = var.environment
+  vpc_cidr    = "10.0.0.0/17"
+}
 
-  root_block_device {
-    volume_size = 8 # GB
-    volume_type = "gp3"
-    tags = {
-      Name        = "cloudcasts-${var.environment}-web"
-      Project     = "cloudcasts.io"
-      Environment = var.environment
-      ManagedBy   = "terraform"
-    }
-  }
+module "ec2_app" {
+  source = "./modules/ec2"
 
-  tags = {
-    Name        = "cloudcasts-${var.environment}-web"
-    Project     = "cloudcasts.io"
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
+  environment  = var.environment
+  instance_ami = data.aws_ami.app.id
+  infra_role   = "web"
+}
+
+module "ec2_worker" {
+  source = "./modules/ec2"
+
+  environment  = var.environment
+  instance_ami = data.aws_ami.app.id
+  infra_role   = "worker"
 }
