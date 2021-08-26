@@ -14,7 +14,7 @@ resource "aws_eip" "nat" {
   vpc = true
 
   lifecycle {
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 
   tags = {
