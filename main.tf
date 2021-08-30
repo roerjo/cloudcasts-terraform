@@ -47,6 +47,16 @@ module "vpc" {
 
   environment = var.environment
   vpc_cidr    = "10.0.0.0/17"
+  azs = [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c",
+    "us-east-1d",
+    "us-east-1e",
+    "us-east-1f"
+  ]
+  public_subnets  = slice(cidrsubnets("10.0.0.0/17", 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4), 0, 6)
+  private_subnets = slice(cidrsubnets("10.0.0.0/17", 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4), 6, 12)
 }
 
 module "ec2_app" {
@@ -71,7 +81,7 @@ module "ec2_worker" {
   instance_ami     = data.aws_ami.app.id
   infra_role       = "worker"
   create_public_ip = false
-  subnets          = keys(module.vpc.vpc_private_subnets)
+  subnets          = module.vpc.vpc_private_subnets
   security_groups  = [module.vpc.security_group_private]
 
   tags = {

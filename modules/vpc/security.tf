@@ -1,7 +1,7 @@
 resource "aws_security_group" "public" {
   name        = "cloudcasts-${var.environment}-public-sg"
   description = "Public internet access"
-  vpc_id      = aws_vpc.vpc.id
+  vpc_id      = module.vpc.vpc_id
 
   tags = {
     Name        = "cloudcasts-${var.environment}-public-sg"
@@ -58,7 +58,7 @@ resource "aws_security_group_rule" "ingress_https" {
 resource "aws_security_group" "private" {
   name        = "cloudcasts-${var.environment}-private-sg"
   description = "Private internet access"
-  vpc_id      = aws_vpc.vpc.id
+  vpc_id      = module.vpc.vpc_id
 
   tags = {
     Name        = "cloudcasts-${var.environment}-private-sg"
@@ -84,7 +84,7 @@ resource "aws_security_group_rule" "private_ingress_all" {
   from_port   = 0
   to_port     = 65535
   protocol    = "-1"
-  cidr_blocks = [aws_vpc.vpc.cidr_block]
+  cidr_blocks = [module.vpc.vpc_cidr_block]
 
   security_group_id = aws_security_group.private.id
 }

@@ -1,3 +1,31 @@
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "3.6.0"
+ 
+  name = "cloudcasts-${var.environment}-vpc"
+  cidr = var.vpc_cidr
+ 
+  azs = var.azs
+ 
+  # Single NAT Gateway, see docs linked above
+  enable_nat_gateway = true
+  single_nat_gateway = true
+  one_nat_gateway_per_az = false
+ 
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
+ 
+  tags = {
+    Name = "cloudcasts-${var.environment}-vpc"
+    Project = "cloudcasts.io"
+    Environment = var.environment
+    ManagedBy = "terraform"
+  }
+}
+
+/*
+Non-community module setup
+
 resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
 
@@ -38,3 +66,4 @@ resource "aws_subnet" "private" {
     Subnet      = "${each.key}-${each.value}"
   }
 }
+*/

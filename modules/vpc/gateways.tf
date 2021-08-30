@@ -1,3 +1,6 @@
+/*
+Non-community module setup
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
@@ -95,3 +98,4 @@ resource "aws_route_table_association" "private" {
 
   route_table_id = aws_route_table.private.id
 }
+*/
