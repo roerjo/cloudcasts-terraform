@@ -14,6 +14,10 @@ terraform {
   }
 }
 
+locals {
+  environment = terraform.workspace == "default" ? "dev" : terraform.workspace
+}
+
 provider "aws" {
   region  = var.default_region
   profile = "roerjo-cloudcasts"
@@ -36,7 +40,7 @@ data "aws_ami" "app" {
   }
   filter {
     name   = "tag:Environment"
-    values = [var.environment]
+    values = ["staging"]
   }
 
   owners = ["self"]
@@ -45,7 +49,7 @@ data "aws_ami" "app" {
 module "vpc" {
   source = "./modules/vpc"
 
-  environment = var.environment
+  environment = local.environment
   vpc_cidr    = "10.0.0.0/17"
   azs = [
     "us-east-1a",
@@ -62,7 +66,7 @@ module "vpc" {
 module "ec2_app" {
   source = "./modules/ec2"
 
-  environment      = var.environment
+  environment      = local.environment
   instance_ami     = data.aws_ami.app.id
   infra_role       = "web"
   create_public_ip = true
@@ -70,14 +74,14 @@ module "ec2_app" {
   subnets         = ["subnet-0578825bc915e6628"] #keys(module.vpc.vpc_public_subnets)
   security_groups = [module.vpc.security_group_public]
   tags = {
-    Name = "cloudcasts-${var.environment}-web"
+    Name = "cloudcasts-${local.environment}-web"
   }
 }
 
 module "ec2_worker" {
   source = "./modules/ec2"
 
-  environment      = var.environment
+  environment      = local.environment
   instance_ami     = data.aws_ami.app.id
   infra_role       = "worker"
   create_public_ip = false
@@ -85,6 +89,6 @@ module "ec2_worker" {
   security_groups  = [module.vpc.security_group_private]
 
   tags = {
-    Name = "cloudcasts-${var.environment}-worker"
+    Name = "cloudcasts-${local.environment}-worker"
   }
 }
